@@ -585,28 +585,36 @@ class Espressif32Platform(PlatformBase):
 
         safe_remove_directory(paths['tool_path'])
 
-        tl_path = f"file://{Path(IDF_TOOLS_PATH) / 'tools' / tool_name}"
+        # Convert local filesystem path into valid file URI.
+        # On Windows: file:///C:/Users/...
+        tl_path = (
+            Path(IDF_TOOLS_PATH) / "tools" / tool_name
+        ).resolve().as_uri()
+        
         pm.install(tl_path)
-
+        
+        # Package is already installed by ToolPackageManager.
+        # Do not let PlatformIO reinstall it.
+        self.packages[tool_name]["optional"] = True
+        
         logger.info(f"Tool {tool_name} successfully installed")
         return True
+
 
     def _handle_existing_tool(self, tool_name: str, paths: Dict[str, str]) -> bool:
         """Handle already installed tools with version checking."""
         if self._check_tool_version(tool_name):
-            # Version matches, use tool
-            self.packages[tool_name]["version"] = paths['tool_path']
-            self.packages[tool_name]["optional"] = False
+            # Package is already installed and has the correct version.
+            # Do not convert a Windows filesystem path into
+            # a PlatformIO package version.
+            self.packages[tool_name]["optional"] = True
             logger.debug(f"Tool {tool_name} found with correct version")
             return True
-
-        # Version mismatch detected, reinstall tool (cleanup already performed)
+    
         logger.info(f"Reinstalling {tool_name} due to version mismatch")
-
-        # Remove the main tool directory (if it still exists after cleanup)
         safe_remove_directory(paths['tool_path'])
-
         return self.install_tool(tool_name)
+
 
     def _configure_arduino_framework(self, frameworks: List[str], mcu: str) -> None:
         """Configure Arduino framework dependencies."""
