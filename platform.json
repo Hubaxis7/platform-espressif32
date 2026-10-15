@@ -40,7 +40,7 @@
         "optional": true,
         "owner": "espressif",
         "version": "https://github.com/Hubaxis7/platform-espressif32/releases/download/tl-s3-v1/framework-arduinoespressif32-libs-s3-3.3.12.zip"
-    }
+    },
     "framework-arduino-c2-skeleton-lib": {
       "type": "framework",
       "optional": true,
